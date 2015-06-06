@@ -1,8 +1,6 @@
 /* path parsing utility */
 
-export type PathSeg = string;
-
-export function split(path:string):Array<PathSeg>{
+export function split(path:string):Array<string>{
     var s=0, st=0;
     var result:Array<string>=[];
 
