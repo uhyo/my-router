@@ -6,6 +6,11 @@ roption1=
     patterns:
         ':id': /^[-_a-zA-Z0-9]+/
 
+roption2=
+    patterns:
+        ':id': /^[-_a-zA-Z0-9]+/
+        ':num':/^\d+$/
+
 describe 'Router',->
     describe 'undefined path',->
         it 'returns null',->
@@ -71,32 +76,6 @@ describe 'Router',->
                 assert.deepEqual r.route('/foo/hoge'),{params:{':id':'hoge'},result:'id'}
                 assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'id'}
 
-            it 'pattern vs pattern (stricter leads)',->
-                r=new Router {
-                    patterns:
-                        ':id': /^[-_a-zA-Z0-9]+$/
-                        ':num':/^\d+$/
-                }
-
-                r.add '/foo/:num', 'num'
-                r.add '/foo/:id', 'id'
-
-                assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'id'}
-                assert.deepEqual r.route('/foo/123'),{params:{':num':'123'},result:'num'}
-
-            it 'pattern vs pattern (wider leads)',->
-                r=new Router {
-                    patterns:
-                        ':id': /^[-_a-zA-Z0-9]+$/
-                        ':num':/^\d+$/
-                }
-
-                r.add '/foo/:id', 'id'
-                r.add '/foo/:num', 'num'
-
-                assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'id'}
-                assert.deepEqual r.route('/foo/123'),{params:{':id':'123'},result:'id'}
-
 
             it 'diamond (static leads)',->
                 r=new Router {
@@ -159,23 +138,88 @@ describe 'Router',->
                 assert.deepEqual r.route('/quux/bar'), {params:{':id':'quux'},result:'idbar'}
                 assert.deepEqual r.route('/foo'), {params:{':id':'foo'},result:'id'}
 
-        it 'multiple patterns',->
-            r=new Router {
-                patterns:
-                    ':id': /^[-_a-zA-Z0-9]+$/
-                    ':num': /^\d+$/
-            }
+        describe 'multiple patterns',->
+            it 'basic combination',->
+                r=new Router roption2
 
-            r.add '/foo/:id', 'idtop'
-            r.add '/foo/:id/:num', 'idnum'
-            r.add '/foo/:id/bar', 'idbar'
-            r.add '/foo/:num/baz', 'numbaz'
-            r.add '/foo/:num/:id', 'numid'
+                r.add '/foo/:id', 'idtop'
+                r.add '/foo/:id/:num', 'idnum'
+                r.add '/foo/:id/bar', 'idbar'
+                r.add '/foo/:num/baz', 'numbaz'
+                r.add '/foo/:num/:id', 'numid'
 
-            assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'idtop'}
-            assert.deepEqual r.route('/foo/bar/3'),{params:{':id':'bar',':num':'3'},result:'idnum'}
-            assert.deepEqual r.route('/foo/bar/bar'),{params:{':id':'bar'},result:'idbar'}
-            assert.equal r.route('/foo/bar/baz'),undefined
-            assert.deepEqual r.route('/foo/50/bar'),{params:{':id':'50'},result:'idbar'}
-            assert.deepEqual r.route('/foo/50/baz'),{params:{':num':'50'},result:'numbaz'}
-            assert.deepEqual r.route('/foo/50/hoge'),{params:{':num':'50',':id':'hoge'},result:'numid'}
+                assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'idtop'}
+                assert.deepEqual r.route('/foo/bar/3'),{params:{':id':'bar',':num':'3'},result:'idnum'}
+                assert.deepEqual r.route('/foo/bar/bar'),{params:{':id':'bar'},result:'idbar'}
+                assert.equal r.route('/foo/bar/baz'),undefined
+                assert.deepEqual r.route('/foo/50/bar'),{params:{':id':'50'},result:'idbar'}
+                assert.deepEqual r.route('/foo/50/baz'),{params:{':num':'50'},result:'numbaz'}
+                assert.deepEqual r.route('/foo/50/hoge'),{params:{':num':'50',':id':'hoge'},result:'numid'}
+
+            it 'pattern vs pattern (stricter leads)',->
+                r=new Router roption2
+
+                r.add '/foo/:num', 'num'
+                r.add '/foo/:id', 'id'
+
+                assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'id'}
+                assert.deepEqual r.route('/foo/123'),{params:{':num':'123'},result:'num'}
+
+            it 'pattern vs pattern (wider leads)',->
+                r=new Router roption2
+
+                r.add '/foo/:id', 'id'
+                r.add '/foo/:num', 'num'
+
+                assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'id'}
+                assert.deepEqual r.route('/foo/123'),{params:{':id':'123'},result:'id'}
+
+            it 'pattern vs pattern (complex)',->
+                r=new Router roption2
+                r.add '/:id', 'id'
+                r.add '/:id/foo', 'foo'
+                r.add '/:num', 'num'
+                r.add '/:num/bar', 'bar'
+                r.add '/:num/foo', 'numfoo'
+
+                assert.deepEqual r.route('/foo'),{params:{':id':'foo'},result:'id'}
+                assert.equal r.route('/foo/bar'),null
+                assert.deepEqual r.route('/666'),{params:{':id':'666'},result:'id'}
+                assert.deepEqual r.route('/foo/foo'),{params:{':id':'foo'},result:'foo'}
+                assert.deepEqual r.route('/666/bar'),{params:{':num':'666'},result:'bar'}
+                assert.deepEqual r.route('/666/foo'),{params:{':id':'666'},result:'foo'}
+
+            it 'static vs pattern (pattern leads)',->
+                r=new Router roption2
+                r.add '/:num', 'num'
+                r.add '/:id', 'id'
+                r.add '/foo/foo','foofoo'
+                r.add '/800/bar', '800bar'
+                r.add '/:id/foo', 'foo'
+                r.add '/:num/bar', 'bar'
+                r.add '/800', '800'
+
+                assert.deepEqual r.route('/foo/foo'),{params:{},result:'foofoo'}
+                assert.deepEqual r.route('/800/bar'),{params:{},result:'800bar'}
+                assert.deepEqual r.route('/800'),{params:{':num':'800'},result:'num'}
+                assert.deepEqual r.route('/foo'),{params:{':id':'foo'},result:'id'}
+                assert.deepEqual r.route('/800/foo'),{params:{':id':'800'},result:'foo'}
+                assert.deepEqual r.route('/666/bar'),{params:{':num':'666'},result:'bar'}
+
+            it 'static vs pattern (static leads)',->
+                r=new Router roption2
+                r.add '/foo/foo','foofoo'
+                r.add '/800/bar', '800bar'
+                r.add '/800', '800'
+                r.add '/:num', 'num'
+                r.add '/:id', 'id'
+                r.add '/:id/foo', 'foo'
+                r.add '/:num/bar', 'bar'
+
+                assert.deepEqual r.route('/foo/foo'),{params:{},result:'foofoo'}
+                assert.deepEqual r.route('/800/bar'),{params:{},result:'800bar'}
+                assert.deepEqual r.route('/800'),{params:{},result:'800'}
+                assert.deepEqual r.route('/foo'),{params:{':id':'foo'},result:'id'}
+                assert.deepEqual r.route('/800/foo'),{params:{':id':'800'},result:'foo'}
+                assert.deepEqual r.route('/666/bar'),{params:{':num':'666'},result:'bar'}
+

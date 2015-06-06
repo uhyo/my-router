@@ -133,8 +133,11 @@ export default class State<T>{
                     res.mount(tan.get());
                 }
                 //copy requirements to res
-                for(let key in tan.requirements){
-                    res.requirements[key]=true;
+                if(i===0){
+                    //only first match!
+                    for(let key in tan.requirements){
+                        res.requirements[key]=true;
+                    }
                 }
                 //copy static transitions onto res
                 let tb=tan.staticTable;
