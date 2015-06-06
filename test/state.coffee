@@ -14,17 +14,40 @@ options2=
         ':num': /^[\-\+]?\d+$/
 
 describe 'State',->
-    it 'endpoint mounting',->
-        st=new State options1
-        assert.equal st.has(), false
-        st.mount 'foo'
-        assert.equal st.has(), true
-        assert.equal st.get(), 'foo'
-        st.mount 'bar'
-        assert.equal st.has(), true
-        assert.equal st.get(), 'bar'
+    describe 'endpoint functionality',->
+        it 'mounting',->
+            st=new State options1
+            assert.equal st.has(), false
+            st.mount 'foo'
+            assert.equal st.has(), true
+            assert.equal st.get(), 'foo'
+            st.mount 'bar'
+            assert.equal st.has(), true
+            assert.equal st.get(), 'bar'
+        it 'endpoint params',->
+            st=new State options1
+            st.mount 'foo'
+            st.params=
+                ':id':'bar'
+            st.requirements=
+                ':id':true
+            assert.deepEqual st.match([]),[{
+                params:
+                    ':id':'bar'
+                state: st
+            }]
+        it 'endpoint params (no requirements)',->
+            st=new State options1
+            st.mount 'foo'
+            st.params=
+                ':id':'bar'
+            st.requirements={}
+            assert.deepEqual st.match([]),[{
+                params:{}
+                state: st
+            }]
     describe 'static paths',->
-        it 'matching',->
+        it 'no matching',->
             st=new State options1
             assert.deepEqual [],st.match ['foo']
 
@@ -33,7 +56,7 @@ describe 'State',->
             assert.equal 1,st.go(['foo','bar']).length
             assert.ok st.go(['foo','bar'])[0] instanceof State
 
-        it 'midpoint matcing',->
+        it 'midpoint branching',->
             st=new State options1
             [st2]=st.go ['foo']
             sts=st.go(['foo','bar'])
@@ -41,20 +64,38 @@ describe 'State',->
             assert.deepEqual [st2],st.go(['foo'])
             assert.deepEqual sts,st.go(['foo','bar'])
 
-    it 'defined path',->
-        st=new State options1
-        st.go ['foo']
-        assert.equal 1,st.match(['foo']).length
-        assert.ok st.match(['foo'])[0].state instanceof State
+        it 'matching',->
+            st=new State options1
+            st.go ['foo']
+            assert.equal 1,st.match(['foo']).length
+            assert.ok st.match(['foo'])[0].state instanceof State
+
+        it 'matching with endpoint params',->
+            st=new State options1
+            [st2]=st.go ['foo']
+            
+            result=st.match ['foo']
+            assert.deepEqual result[0].params,{}
+            assert.ok result[0].state instanceof State
+
     describe 'pattern matching',->
         st=new State options2
         [st2]=st.go [':id']
+
         it 'match pattern',->
             assert.deepEqual [{
                 params:
                     ':id':'foo-bar_baz00000'
                 state:st2
             }],st.match ['foo-bar_baz00000']
+        it 'match requirements',->
+            st=new State options2
+            [st2]=st.go [':id']
+            st2.requirements={}
+            assert.deepEqual st.match(['hoge']),[{
+                params:{}
+                state:st2
+            }]
         it 'do not match pattern name',->
             assert.deepEqual [],st.match [':id']
         it 'go by pattern name',->
