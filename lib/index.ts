@@ -8,6 +8,13 @@ interface RouterOptions{
     patterns?:{ [seg:string]:RegExp };
 }
 
+interface RouteResult<T>{
+    params:{
+        [key:string]:string;
+    };
+    result:T;
+}
+
 export default class Router<T>{
     private root:State<T>;
     private options:RouterOptions;
@@ -28,18 +35,22 @@ export default class Router<T>{
             }
         }
     }
-    route(path:string):T{
+    route(path:string):RouteResult<T>{
         var segs=pathutil.split(path);
-        var sts = this.root.match(segs);
-        if(sts.length===0){
-            return void 0;
+        var objs = this.root.match(segs);
+        if(objs.length===0){
+            return null;
         }
-        for(let i=0,l=sts.length;i<l;i++){
-            if(sts[i].has()){
-                return sts[i].get();
+        for(let i=0,l=objs.length;i<l;i++){
+            let o=objs[i];
+            if(o.state.has()){
+                return {
+                    params:o.params,
+                    result:o.state.get()
+                };
             }
         }
-        return void 0;
+        return null;
     }
 
     private handleOptions(options:RouterOptions):void{

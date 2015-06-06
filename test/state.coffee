@@ -45,12 +45,16 @@ describe 'State',->
         st=new State options1
         st.go ['foo']
         assert.equal 1,st.match(['foo']).length
-        assert.ok st.match(['foo'])[0] instanceof State
+        assert.ok st.match(['foo'])[0].state instanceof State
     describe 'pattern matching',->
         st=new State options2
         [st2]=st.go [':id']
         it 'match pattern',->
-            assert.deepEqual [st2],st.match ['foo-bar_baz00000']
+            assert.deepEqual [{
+                params:
+                    ':id':'foo-bar_baz00000'
+                state:st2
+            }],st.match ['foo-bar_baz00000']
         it 'do not match pattern name',->
             assert.deepEqual [],st.match [':id']
         it 'go by pattern name',->
