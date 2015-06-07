@@ -1,6 +1,6 @@
 assert = require 'assert'
 
-Router = require('../lib/index').default
+Router = require '../'
 
 roption1=
     patterns:

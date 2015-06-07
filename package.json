@@ -1,6 +1,6 @@
 {
   "name": "my-router",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "My simple url router for me.",
   "main": "index.js",
   "scripts": {
