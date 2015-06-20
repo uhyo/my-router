@@ -16,5 +16,6 @@ declare module "my-router"{
         constructor(options?:RouterOptions);
         add(path:string,value:T):void;
         route(path:string):RouteResult<T>;
+        addPattern(seg:string,pattern:RegExp):void;
     }
 }

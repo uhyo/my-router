@@ -1,4 +1,4 @@
-# my-router v1.0.0
+# my-router v1.1.0
 
 `my-router` is my simple router for me.
 
@@ -26,6 +26,8 @@ router.add('/foo/bar', 'foobar');
 router.add('/:id', 'id');
 router.add('/:id/bar', 'idbar');
 
+router.addPattern(':num', /^\d+$/);
+router.add('/:id/:num', 'idnum');
 
 // Route by paths
 
@@ -63,6 +65,16 @@ console.log(router.route('/hoge/bar'));
 
 console.log(router.route('/hoge/baz'));
 /* returns null */
+
+console.log(router.route('/foo/123'));
+/* returns
+    {
+        'params':{
+            ':num': '123',
+            ':id': 'foo'
+        },
+        'result': 'idnum'
+    } */
 ```
 
 ## TypeScript declaration file
@@ -89,5 +101,12 @@ If value is available, returned object has:
 * `params` dictionary of pattern matching results.
 * `result` value.
 
+### result = router.addPattern(seg,pattern)
+Adds new pattern-match segment definition to `router`.
+
+### Changelog
+* v1.1.0 (2015-06-20)
+    * Add `router.addPattern` for me.
+* v1.0.0
 ## License
 MIT
