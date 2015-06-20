@@ -223,3 +223,34 @@ describe 'Router',->
                 assert.deepEqual r.route('/800/foo'),{params:{':id':'800'},result:'foo'}
                 assert.deepEqual r.route('/666/bar'),{params:{':num':'666'},result:'bar'}
 
+    describe 'adding patterns',->
+        it 'add single pattern',->
+            r=new Router
+            r.add '/foo/hoge', 'hoge'
+            r.addPattern ':id',/^[-_a-zA-Z0-9]+$/
+            r.add '/foo/:id', 'id'
+            assert.deepEqual r.route('/foo/hoge'),{params:{},result:'hoge'}
+            assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'id'}
+        it 'add multiple patterns',->
+            r=new Router
+            r.add '/foo/hoge', 'hoge'
+            r.addPattern ':id',/^[-_a-zA-Z0-9]+$/
+            r.add '/foo/:id', 'id'
+            r.addPattern ':num',/^\d+$/
+            r.add '/:id/:num', 'idnum'
+
+            assert.deepEqual r.route('/foo/hoge'),{params:{},result:'hoge'}
+            assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'id'}
+            assert.deepEqual r.route('/foo/345'),{params:{':id':'345'},result:'id'}
+            assert.deepEqual r.route('/hoge/345'),{params:{':id':'hoge',':num':'345'},result:'idnum'}
+        it 'overwrite pattern',->
+            r=new Router
+            r.add '/foo/hoge', 'hoge'
+            r.addPattern ':id',/^\d+$/
+            r.add '/foo/:id', 'id1'
+            r.addPattern ':id',/^[-_a-zA-Z0-9]+$/
+            r.add '/foo/:id', 'id2'
+
+            assert.deepEqual r.route('/foo/hoge'),{params:{},result:'hoge'}
+            assert.deepEqual r.route('/foo/bar'),{params:{':id':'bar'},result:'id2'}
+            assert.deepEqual r.route('/foo/345'),{params:{':id':'345'},result:'id1'}

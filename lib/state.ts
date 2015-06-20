@@ -6,6 +6,7 @@ interface SegDict{
 interface PathEntry<T>{
     seg:string;
     pattern?:RegExp;
+    patternid?:number;
     params:SegDict;
     next:State<T>;
 }
@@ -17,9 +18,6 @@ interface MatchResult<T>{
 
 interface StateOptions{
     patternPrefix:string;
-    patterns:{
-        [seg:string]:RegExp;
-    }
 }
 
 //State with value & params
@@ -42,7 +40,12 @@ export default class State<T>{
     }
 
     //go path
-    go(segs:Array<string>,requirements:{[seg:string]:boolean} = {}):Array<State<T>>{
+    go(segs:Array<string>,patterns:{
+        [seg:string]:{
+            pattern:RegExp;
+            id:number;
+        };
+    } = {},requirements:{[seg:string]:boolean} = {}):Array<State<T>>{
         var ppx=this.options.patternPrefix;
         var newrequirements:{[seg:string]:boolean}=clone(requirements);
 
@@ -60,21 +63,24 @@ export default class State<T>{
                 if(e.seg===seg){
                     //match
                     fl=true;
-                    result.push(...e.next.go(segs.slice(1),newrequirements));
+                    result.push(...e.next.go(segs.slice(1),patterns,newrequirements));
                     break;
                 }
             }
         }else{
             //pattern segment
-            for(let i=0,table=this.patternTable,l=table.length;i<l;i++){
-                let e=table[i];
-                if(e.seg===seg){
-                    //name matches
-                    fl=true;
-                    //update requirements
-                    newrequirements[seg]=true;
-                    result.push(...e.next.go(segs.slice(1),newrequirements));
-                    break;
+            let pent=patterns[seg];
+            if(pent != null){
+                for(let i=0,table=this.patternTable,l=table.length;i<l;i++){
+                    let e=table[i];
+                    if(e.patternid===pent.id){
+                        //name matches
+                        fl=true;
+                        //update requirements
+                        newrequirements[seg]=true;
+                        result.push(...e.next.go(segs.slice(1),patterns,newrequirements));
+                        break;
+                    }
                 }
             }
         }
@@ -93,13 +99,14 @@ export default class State<T>{
 
             //new state for seg
             let res=new State<T>(this.cloneMyOptions());
-            let p=seg[0]===ppx ? this.options.patterns[seg] : null;
+            let p=seg[0]===ppx ? patterns[seg] : null;
             //make transition (this -> seg)
             if(p != null){
                 // pattern is provided for this seg
                 this.patternTable.push({
                     seg:seg,
-                    pattern:p,
+                    pattern:p.pattern,
+                    patternid:p.id,
                     params:null,
                     next:res
                 });
@@ -175,7 +182,7 @@ export default class State<T>{
                     });
                 }
             }
-            result.push(...res.go(segs.slice(1),newrequirements));
+            result.push(...res.go(segs.slice(1),patterns,newrequirements));
         }
         return result;
     }
@@ -276,16 +283,15 @@ export default class State<T>{
     private cloneMyOptions():StateOptions{
         return {
             patternPrefix:this.options.patternPrefix,
-            patterns:dict(this.options.patterns)
         };
 
-        function dict<T>(obj:{[key:string]:T}):{[key:string]:T}{
+        /*function dict<T>(obj:{[key:string]:T}):{[key:string]:T}{
             var result=<{[key:string]:T}>{};
             for(var key in obj){
                 result[key]=obj[key];
             }
             return result;
-        }
+        }*/
     }
 }
 

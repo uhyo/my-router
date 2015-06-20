@@ -17,17 +17,30 @@ interface RouteResult<T>{
 
 export default class Router<T>{
     private root:State<T>;
-    private options:RouterOptions;
+    private patternPrefix:string;
+    private patternid:number;
+    private patterns:{
+        [seg:string]:{
+            pattern:RegExp;
+            id:number;
+        };
+    };
     constructor(options?:RouterOptions){
         this.handleOptions(options);
+        this.patterns={};
+        this.patternid=1;
         this.root=new State<T>({
-            patternPrefix:this.options.patternPrefix,
-            patterns:this.options.patterns
+            patternPrefix:this.patternPrefix,
         });
+        if(options!=null && options.patterns!=null){
+            for(var key in options.patterns){
+                this.addPattern(key,options.patterns[key]);
+            }
+        }
     }
     add(path:string,value:T):void{
         var segs=pathutil.split(path);
-        var sts = this.root.go(segs);
+        var sts = this.root.go(segs,this.patterns);
 
         for(let i=0,l=sts.length;i<l;i++){
             if(!sts[i].has()){
@@ -52,6 +65,12 @@ export default class Router<T>{
         }
         return null;
     }
+    addPattern(seg:string,regexp:RegExp):void{
+        this.patterns[seg]={
+            pattern:regexp,
+            id:this.patternid++
+        };
+    }
 
     private handleOptions(options:RouterOptions):void{
         if(options==null){
@@ -62,10 +81,7 @@ export default class Router<T>{
         }else if(options.patternPrefix.length!==1){
             console.warn("[my-router] WARN: patternPrefix must be one character");
         }
-        if(options.patterns==null){
-            options.patterns={};
-        }
 
-        this.options=options;
+        this.patternPrefix=options.patternPrefix;
     }
 }
