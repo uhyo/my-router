@@ -1,9 +1,9 @@
 import * as pathutil from './pathutil';
 
-interface SegDict{
+export interface SegDict{
     [key:string]:string;
 }
-interface PathEntry<T>{
+export interface PathEntry<T>{
     seg:string;
     pattern?:RegExp;
     patternid?:number;
@@ -11,12 +11,12 @@ interface PathEntry<T>{
     next:State<T>;
 }
 
-interface MatchResult<T>{
+export interface MatchResult<T>{
     params:SegDict;
     state:State<T>;
 }
 
-interface StateOptions{
+export interface StateOptions{
     patternPrefix:string;
 }
 

@@ -1,7 +1,7 @@
 # state test
 assert = require 'assert'
 
-State = require('../lib/state').default
+State = require('../dist/lib/state').default
 
 options=
     patternPrefix: ':'

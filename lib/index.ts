@@ -3,12 +3,12 @@ import * as pathutil from './pathutil';
 
 type Callback = (err:any,result:any)=>void;
 
-interface RouterOptions{
+export interface RouterOptions{
     patternPrefix?:string,
     patterns?:{ [seg:string]:RegExp };
 }
 
-interface RouteResult<T>{
+export interface RouteResult<T>{
     params:{
         [key:string]:string;
     };

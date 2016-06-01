@@ -1,7 +1,7 @@
 # pathutil test
 assert = require 'assert'
 
-pathutil = require '../lib/pathutil'
+pathutil = require '../dist/lib/pathutil'
 
 describe 'pathutil',->
     describe 'split',->

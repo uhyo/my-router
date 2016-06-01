@@ -1,9 +1,13 @@
 {
   "name": "my-router",
-  "version": "1.1.0",
+  "version": "1.1.0+b1",
   "description": "My simple url router for me.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "scripts": {
+    "build": "tsc -d",
+    "clean": "rimraf dist",
+    "prepublish": "not-in-install && npm run build && npm run test || in-install",
     "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register"
   },
   "repository": {
@@ -21,6 +25,9 @@
   "homepage": "https://github.com/uhyo/my-router",
   "devDependencies": {
     "coffee-script": "^1.9.3",
-    "mocha": "^2.2.5"
+    "in-publish": "^2.0.0",
+    "mocha": "^2.2.5",
+    "rimraf": "^2.5.2",
+    "typescript": "^1.8.10"
   }
 }

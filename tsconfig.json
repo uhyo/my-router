@@ -1,6 +1,13 @@
 {
     "compilerOptions":{
         "module":"commonjs",
-        "target":"es5"
-    }
+        "target":"es5",
+        "outDir":"dist"
+    },
+    "files":[
+        "lib/pathutil.ts",
+        "lib/state.ts",
+        "lib/index.ts",
+        "index.ts"
+    ]
 }
