@@ -1,4 +1,4 @@
-# my-router v1.1.0
+# my-router v2.0.0
 
 `my-router` is my simple router for me.
 
@@ -12,7 +12,7 @@ npm install my-router
 ## Usage
 
 ```js
-var Router = require('my-router');
+var Router = require('my-router').Router;
 
 var router=new Router({
     patterns:{
@@ -77,8 +77,8 @@ console.log(router.route('/foo/123'));
     } */
 ```
 
-## TypeScript declaration file
-Available at `node_modules/my-router/lib.d.ts`.
+## TypeScript declaration
+Available.
 
 Note that `Router` is of type `Router<T>`, where `T` is the type of values routed.
 
