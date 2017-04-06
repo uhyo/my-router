@@ -1,6 +1,6 @@
 assert = require 'assert'
 
-Router = require '../'
+Router = require('../').Router
 
 roption1=
     patterns:

@@ -1,14 +1,15 @@
 {
   "name": "my-router",
-  "version": "1.1.1-rc1",
+  "version": "2.0.0-rc1",
   "description": "My simple url router for me.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -d",
+    "build": "tsc",
     "clean": "rimraf dist",
     "prepublish": "not-in-install && npm run build && npm run test || in-install",
-    "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register"
+    "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register",
+    "watch": "tsc --watch"
   },
   "repository": {
     "type": "git",
@@ -26,8 +27,8 @@
   "devDependencies": {
     "coffee-script": "^1.9.3",
     "in-publish": "^2.0.0",
-    "mocha": "^2.2.5",
+    "mocha": "^3.2.0",
     "rimraf": "^2.5.2",
-    "typescript": "^1.8.10"
+    "typescript": "^2.2.2"
   }
 }

@@ -1,8 +1,6 @@
 import State from './state';
 import * as pathutil from './pathutil';
 
-type Callback = (err:any,result:any)=>void;
-
 export interface RouterOptions{
     patternPrefix?:string,
     patterns?:{ [seg:string]:RegExp };
@@ -48,9 +46,9 @@ export default class Router<T>{
             }
         }
     }
-    route(path:string):RouteResult<T>{
-        var segs=pathutil.split(path);
-        var objs = this.root.match(segs);
+    route(path:string):RouteResult<T> | null{
+        const segs = pathutil.split(path);
+        const objs = this.root.match(segs);
         if(objs.length===0){
             return null;
         }
@@ -59,7 +57,7 @@ export default class Router<T>{
             if(o.state.has()){
                 return {
                     params:o.params,
-                    result:o.state.get()
+                    result:o.state.get(),
                 };
             }
         }
@@ -72,7 +70,7 @@ export default class Router<T>{
         };
     }
 
-    private handleOptions(options:RouterOptions):void{
+    private handleOptions(options:RouterOptions | undefined):void{
         if(options==null){
             options={};
         }

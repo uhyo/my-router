@@ -1,5 +1,3 @@
-import * as pathutil from './pathutil';
-
 export interface SegDict{
     [key:string]:string;
 }
@@ -7,7 +5,7 @@ export interface PathEntry<T>{
     seg:string;
     pattern?:RegExp;
     patternid?:number;
-    params:SegDict;
+    params?:SegDict;
     next:State<T>;
 }
 
@@ -33,26 +31,23 @@ export default class State<T>{
     constructor(private options:StateOptions){
         this.staticTable=[];
         this.patternTable=[];
-        this.value=void 0;
         this.params={};
         this.requirements={};
         this.isset=false;
     }
 
     //go path
-    go(segs:Array<string>,patterns:{
-        [seg:string]:{
-            pattern:RegExp;
-            id:number;
-        };
-    } = {},requirements:{[seg:string]:boolean} = {}):Array<State<T>>{
-        var ppx=this.options.patternPrefix;
-        var newrequirements:{[seg:string]:boolean}=clone(requirements);
+    go(segs:Array<string>,patterns: Record<string, {
+        pattern:RegExp;
+        id:number;
+    }> = {},requirements: Record<string, boolean> = {}):Array<State<T>>{
+        const ppx = this.options.patternPrefix;
+        const newrequirements: Record<string, boolean> = clone(requirements);
 
         if(segs.length===0){
             return [this];
         }
-        var isendpoint = segs.length===1;
+        const isendpoint = segs.length===1;
         var seg=segs[0];
         var fl=false;   //construction needed flag
         var result:Array<State<T>>=[];
@@ -89,8 +84,8 @@ export default class State<T>{
             //find matching patterns if static
             if(seg[0]!==ppx){
                 for(let i=0,table=this.patternTable,l=table.length;i<l;i++){
-                    let e=table[i];
-                    if(e.pattern.test(seg)){
+                    const e = table[i];
+                    if(e.pattern && e.pattern.test(seg)){
                         //pattern match
                         targets.push(e);
                     }
@@ -104,17 +99,17 @@ export default class State<T>{
             if(p != null){
                 // pattern is provided for this seg
                 this.patternTable.push({
-                    seg:seg,
-                    pattern:p.pattern,
-                    patternid:p.id,
-                    params:null,
-                    next:res
+                    seg,
+                    pattern: p.pattern,
+                    patternid: p.id,
+                    params: void 0,
+                    next: res,
                 });
             }else{
                 this.staticTable.push({
-                    seg:seg,
-                    params:null,
-                    next:res
+                    seg,
+                    params: void 0,
+                    next: res,
                 });
             }
             if(p != null){
@@ -137,7 +132,10 @@ export default class State<T>{
                     if(!(target.seg in res.params)){
                         res.params[target.seg]=seg;
                     }
-                    res.mount(tan.get());
+                    const t = tan.get();
+                    if (t){
+                        res.mount(t);
+                    }
                 }
                 //copy requirements to res
                 if(i===0){
@@ -231,7 +229,7 @@ export default class State<T>{
         }
         for(let i=0,table=this.patternTable,l=table.length;i<l;i++){
             let e=table[i];
-            if(e.pattern.test(seg)){
+            if(e.pattern && e.pattern.test(seg)){
                 let objs=e.next.match(segs.slice(1));
                 for(let j=0,m=objs.length;j<m;j++){
                     let o=objs[j];
@@ -264,11 +262,11 @@ export default class State<T>{
         return result;
     }
     //get value
-    get():T{
+    get(): T{
         return this.value;
     }
     //has value
-    has():boolean{
+    has(): boolean{
         return this.isset;
     }
 
@@ -295,17 +293,17 @@ export default class State<T>{
     }
 }
 
-function clone(obj){
+function clone<T>(obj: T): T{
     if("object"!==typeof obj || obj==null || obj instanceof RegExp || obj instanceof Date){
-        return obj;
+        return obj as any;
     }else if(Array.isArray(obj)){
-        return obj.map((x)=>{return x});
+        return [...obj] as any;
     }
-    var result:any={};
-    var ks=Object.getOwnPropertyNames(obj);
-    for(var i=0,l=ks.length;i<l;i++){
-        let k=ks[i];
-        result[k]=clone(obj[k]);
+    const result:any = {};
+    const ks = Object.getOwnPropertyNames(obj);
+    for(let i=0, l=ks.length; i<l; i++){
+        const k=ks[i];
+        result[k] = clone((obj as any)[k]);
     }
     return result;
 }
